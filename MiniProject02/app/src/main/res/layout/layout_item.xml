@@ -7,14 +7,14 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
         <TextView
-            android:id="@+id/listWord"
+            android:id="@+id/textView_word"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="35dp"/>
+            android:textSize="28dp"/>
         <TextView
-            android:id="@+id/listMean"
+            android:id="@+id/textView_mean"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="25dp"/>
+            android:textSize="22dp"/>
     </LinearLayout>
 </LinearLayout>
