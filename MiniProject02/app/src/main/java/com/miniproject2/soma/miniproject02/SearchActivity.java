@@ -27,6 +27,7 @@ public class SearchActivity extends AppCompatActivity {
         initModel();
         initView();
         initController();
+        initListener();
     }
 
     private void initModel() {
@@ -41,6 +42,14 @@ public class SearchActivity extends AppCompatActivity {
         listView_result = (ListView) findViewById(R.id.listView_result);
 
         listView_result.setFocusable(false);
+    }
+
+    private void initController() {
+        customAdapter = new CustomAdapter(getApplicationContext(), source);
+        listView_result.setAdapter(customAdapter);
+    }
+
+    private void initListener() {
 
         button_search.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -49,7 +58,6 @@ public class SearchActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(editText_word.getText())) {
 
                     Toast.makeText(getApplicationContext(), "Value cannot be null", Toast.LENGTH_LONG).show();
-
                     return;
                 }
 
@@ -57,6 +65,9 @@ public class SearchActivity extends AppCompatActivity {
 
                 data.word = editText_word.getText().toString();
                 data.mean = "임시";
+
+
+                new HttpConnectionThread(data.word).execute();
 
                 source.add(0, data);
 
@@ -71,9 +82,7 @@ public class SearchActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 Data data = (Data) customAdapter.getItem(position);
-
                 Toast.makeText(getApplicationContext(), data.word + "\n" + data.mean, Toast.LENGTH_LONG).show();
-
             }
         });
 
@@ -82,20 +91,11 @@ public class SearchActivity extends AppCompatActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
                 Data data = (Data) customAdapter.getItem(position);
-
                 source.remove(data);
-
                 customAdapter.notifyDataSetChanged();
 
                 return true;
             }
         });
-
-
-    }
-
-    private void initController() {
-        customAdapter = new CustomAdapter(getApplicationContext(), source);
-        listView_result.setAdapter(customAdapter);
     }
 }
