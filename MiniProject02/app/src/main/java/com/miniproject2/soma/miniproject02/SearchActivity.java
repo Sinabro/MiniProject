@@ -1,8 +1,10 @@
 package com.miniproject2.soma.miniproject02;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -10,15 +12,23 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class SearchActivity extends AppCompatActivity {
 
+    Data data;
     EditText editText_word;
     Button button_search;
     ArrayList<Data> source;
     ListView listView_result;
     CustomAdapter customAdapter = null;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +55,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void initController() {
+
         customAdapter = new CustomAdapter(getApplicationContext(), source);
         listView_result.setAdapter(customAdapter);
     }
@@ -61,19 +72,62 @@ public class SearchActivity extends AppCompatActivity {
                     return;
                 }
 
-                Data data = new Data();
-
+                data = new Data();
                 data.word = editText_word.getText().toString();
-                data.mean = "임시";
 
+                AsyncTask<String, Void, String> mTask = new AsyncTask<String, Void, String>() {
+                    @Override
+                    protected String doInBackground(String... params) {
 
-                new HttpConnectionThread(data.word).execute();
+                        final String DAUM_DICTIONARY_URL = "http://small.dic.daum.net/search.do?q=";
+                        final String PARSING_TAG1 = "<div class=\"txt_means_KUEK\">";
+                        final String PARSING_TAG2 = "</div>";
+                        String regex1 = "\\<.*?\\>";
+                        String regex2 = "<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>";
+                        URL url = null;
+                        String response = "";
+                        String mean = "";
 
-                source.add(0, data);
+                        try {
+                            url = new URL(DAUM_DICTIONARY_URL + data.word);
 
-                customAdapter.notifyDataSetChanged();
+                            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                            httpURLConnection.setReadTimeout(10000 /* milliseconds */);
+                            httpURLConnection.setConnectTimeout(15000 /* milliseconds */);
 
-                editText_word.setText("");
+                            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
+                            while((response = bufferedReader.readLine()) != null) {
+                                if(response.contains(PARSING_TAG1)){
+                                    while(!response.contains(PARSING_TAG2)) {
+                                        mean += response;
+                                        response = bufferedReader.readLine();
+                                    }
+                                    break;
+                                }
+                            }
+                            mean = mean.replaceAll(regex1, "");
+                            mean = mean.replaceAll(regex2, "");
+                            mean = mean.replaceAll("\t", "");
+                            data.mean = mean;
+
+                            Log.e("A", mean);
+                        }
+                        catch (IOException e) {
+
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(String result) {
+                        super.onPreExecute();
+
+                        source.add(0, data);
+                        customAdapter.notifyDataSetChanged();
+                        editText_word.setText("");
+                    }
+                };
+                mTask.execute();
             }
         });
 
