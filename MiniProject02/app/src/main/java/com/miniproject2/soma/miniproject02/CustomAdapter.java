@@ -21,14 +21,12 @@ public class CustomAdapter extends BaseAdapter {
 
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.source = source;
-
     }
 
     public void setSource(ArrayList<Data> source) {
 
         this.source = source;
         notifyDataSetChanged();
-
     }
 
     @Override
@@ -61,13 +59,11 @@ public class CustomAdapter extends BaseAdapter {
             viewHolder.textView_mean = (TextView) convertView.findViewById(R.id.textView_mean);
 
             convertView.setTag(viewHolder);
-        } else {
 
-            viewHolder = (ViewHolder) convertView.getTag();
-        }
+        } else { viewHolder = (ViewHolder) convertView.getTag(); }
 
         viewHolder.textView_word.setText(data.word);
-        viewHolder.textView_mean.setText(data.mean);
+        viewHolder.textView_mean.setText(data.mean + "\n(검색 횟수 : " + data.count + " 회)");
 
         return convertView;
     }
