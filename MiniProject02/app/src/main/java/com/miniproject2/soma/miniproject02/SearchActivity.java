@@ -10,10 +10,12 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -23,7 +25,8 @@ public class SearchActivity extends AppCompatActivity {
 
     Data data;
     EditText editText_word;
-    Button button_search;
+    Button button_search, button_load, button_save;
+    RadioGroup radioGroup_align;
     ArrayList<Data> source;
     ListView listView_result;
     CustomAdapter customAdapter = null;
@@ -48,6 +51,9 @@ public class SearchActivity extends AppCompatActivity {
 
         editText_word = (EditText) findViewById(R.id.editText_word);
         button_search = (Button) findViewById(R.id.button_search);
+        button_load = (Button) findViewById(R.id.button_load);
+        button_save = (Button) findViewById(R.id.button_save);
+        radioGroup_align = (RadioGroup) findViewById(R.id.radioGroup_align);
         listView_result = (ListView) findViewById(R.id.listView_result);
 
         listView_result.setFocusable(false);
@@ -60,6 +66,19 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void initListener() {
+
+        button_load.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadText();
+                    }
+                }).start();
+            }
+        });
 
         button_search.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,7 +132,6 @@ public class SearchActivity extends AppCompatActivity {
                             Log.e("A", data.mean);
                         }
                         catch (IOException e) {
-
                         }
                         return null;
                     }
@@ -152,5 +170,25 @@ public class SearchActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    private void loadText() {
+
+        InputStream inputStream = getResources().openRawResource(R.raw.word);
+        ArrayList arrayList = new ArrayList<String>();
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "EUC_KR"));
+            while(true) {
+                String data = bufferedReader.readLine();
+                if(bufferedReader != null) {
+                    arrayList.add(data);
+                    Log.e("A", data);
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
