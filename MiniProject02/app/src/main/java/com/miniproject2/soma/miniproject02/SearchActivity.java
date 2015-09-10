@@ -28,7 +28,6 @@ public class SearchActivity extends AppCompatActivity {
     ListView listView_result;
     CustomAdapter customAdapter = null;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +73,7 @@ public class SearchActivity extends AppCompatActivity {
 
                 data = new Data();
                 data.word = editText_word.getText().toString();
+                data.mean = "";
 
                 AsyncTask<String, Void, String> mTask = new AsyncTask<String, Void, String>() {
                     @Override
@@ -82,11 +82,12 @@ public class SearchActivity extends AppCompatActivity {
                         final String DAUM_DICTIONARY_URL = "http://small.dic.daum.net/search.do?q=";
                         final String PARSING_TAG1 = "<div class=\"txt_means_KUEK\">";
                         final String PARSING_TAG2 = "</div>";
+
                         String regex1 = "\\<.*?\\>";
                         String regex2 = "<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>";
+
                         URL url = null;
                         String response = "";
-                        String mean = "";
 
                         try {
                             url = new URL(DAUM_DICTIONARY_URL + data.word);
@@ -99,18 +100,17 @@ public class SearchActivity extends AppCompatActivity {
                             while((response = bufferedReader.readLine()) != null) {
                                 if(response.contains(PARSING_TAG1)){
                                     while(!response.contains(PARSING_TAG2)) {
-                                        mean += response;
+                                        data.mean += response;
                                         response = bufferedReader.readLine();
                                     }
                                     break;
                                 }
                             }
-                            mean = mean.replaceAll(regex1, "");
-                            mean = mean.replaceAll(regex2, "");
-                            mean = mean.replaceAll("\t", "");
-                            data.mean = mean;
+                            data.mean = data.mean.replaceAll(regex1, "");
+                            data.mean = data.mean.replaceAll(regex2, "");
+                            data.mean = data.mean.replaceAll("\t", "");
 
-                            Log.e("A", mean);
+                            Log.e("A", data.mean);
                         }
                         catch (IOException e) {
 
@@ -127,6 +127,7 @@ public class SearchActivity extends AppCompatActivity {
                         editText_word.setText("");
                     }
                 };
+
                 mTask.execute();
             }
         });
