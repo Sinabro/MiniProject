@@ -6,4 +6,5 @@ package com.miniproject2.soma.miniproject02;
 public class Data {
     String word;
     String mean;
+    int count;
 }
