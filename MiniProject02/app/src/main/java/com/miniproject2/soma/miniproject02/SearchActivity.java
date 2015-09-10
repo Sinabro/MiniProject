@@ -13,6 +13,10 @@ import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +29,7 @@ public class SearchActivity extends AppCompatActivity {
 
     Data data;
     EditText editText_word;
-    Button button_search, button_load, button_save;
+    Button button_search, button_load, button_save, button_clear;
     RadioGroup radioGroup_align;
     ArrayList<Data> source;
     ListView listView_result;
@@ -70,13 +74,13 @@ public class SearchActivity extends AppCompatActivity {
         button_load.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         loadText();
                     }
                 }).start();
+
             }
         });
 
@@ -85,9 +89,13 @@ public class SearchActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (TextUtils.isEmpty(editText_word.getText())) {
-
                     Toast.makeText(getApplicationContext(), "Value cannot be null", Toast.LENGTH_LONG).show();
                     return;
+                }
+
+                for(int i = 0 ; i < source.size() ; i++) {
+                    if((source.get(i).word.equals(editText_word.getText().toString())) && source.get(i).mean != null)
+                        source.get(i).increaseCount();
                 }
 
                 data = new Data();
@@ -116,9 +124,9 @@ public class SearchActivity extends AppCompatActivity {
                             httpURLConnection.setConnectTimeout(15000 /* milliseconds */);
 
                             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
-                            while((response = bufferedReader.readLine()) != null) {
-                                if(response.contains(PARSING_TAG1)){
-                                    while(!response.contains(PARSING_TAG2)) {
+                            while ((response = bufferedReader.readLine()) != null) {
+                                if (response.contains(PARSING_TAG1)) {
+                                    while (!response.contains(PARSING_TAG2)) {
                                         data.mean += response;
                                         response = bufferedReader.readLine();
                                     }
@@ -129,9 +137,7 @@ public class SearchActivity extends AppCompatActivity {
                             data.mean = data.mean.replaceAll(regex2, "");
                             data.mean = data.mean.replaceAll("\t", "");
 
-                            Log.e("A", data.mean);
-                        }
-                        catch (IOException e) {
+                        } catch (IOException e) {
                         }
                         return null;
                     }
@@ -139,7 +145,6 @@ public class SearchActivity extends AppCompatActivity {
                     @Override
                     protected void onPostExecute(String result) {
                         super.onPreExecute();
-
                         source.add(0, data);
                         customAdapter.notifyDataSetChanged();
                         editText_word.setText("");
@@ -173,22 +178,69 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void loadText() {
-
-        InputStream inputStream = getResources().openRawResource(R.raw.word);
-        ArrayList arrayList = new ArrayList<String>();
         try {
+            InputStream inputStream = getResources().openRawResource(R.raw.word);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "EUC_KR"));
-            while(true) {
-                String data = bufferedReader.readLine();
-                if(bufferedReader != null) {
-                    arrayList.add(data);
-                    Log.e("A", data);
-                    break;
-                }
+            String temp = null;
+            int i = 0;
+
+            //파일의 전체 내용 읽어오기
+            while ((temp = bufferedReader.readLine()) != null) {
+                data = new Data();
+                data.word = temp;
+                source.add(i, data);
+                i++;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    private void re() {
+        InputStream inputStream = getResources().openRawResource(R.raw.word);
+        ArrayList arrayList = new ArrayList<String>();
+        String data;
+
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "EUC_KR"));
+            while ((data = bufferedReader.readLine()) != null) {
+                arrayList.add(data);
+                Log.e("A", data);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void test() {
+        try {
+            InputStream inputStream = getResources().openRawResource(R.raw.word);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "EUC_KR"));
+            StringBuilder stringBuilder = new StringBuilder();
+
+            String temp = null;
+            JSONObject jsonObject = new JSONObject();
+            JSONArray jsonArray = new JSONArray();
+            int i = 0;
+
+            //파일의 전체 내용 읽어오기
+            while ((temp = bufferedReader.readLine()) != null) {
+                try {
+                    jsonObject.put("word", temp);
+                    jsonObject.put("mean", "");
+                    jsonObject.put("count", "0");
+                    jsonArray.put(jsonObject);
+                    Log.e("값 : ", jsonObject.toString());
+                    //i++;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            Log.e("값 : ", jsonArray.toString());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
