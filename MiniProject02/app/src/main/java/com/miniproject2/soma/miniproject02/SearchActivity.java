@@ -156,6 +156,7 @@ public class SearchActivity extends AppCompatActivity {
                     protected String doInBackground(String... params) {
 
                         final String DAUM_DICTIONARY_URL = "http://small.dic.daum.net/search.do?q=";
+
                         final String PARSING_TAG1 = "<div class=\"txt_means_KUEK\">";
                         final String PARSING_TAG2 = "</div>";
 
@@ -175,6 +176,10 @@ public class SearchActivity extends AppCompatActivity {
                             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
                             while ((response = bufferedReader.readLine()) != null) {
                                 if (response.contains(PARSING_TAG1)) {
+                                    if(response.contains(PARSING_TAG2)) {
+                                        data.mean = response;
+                                        break;
+                                    }
                                     while (!response.contains(PARSING_TAG2)) {
                                         data.mean += response;
                                         response = bufferedReader.readLine();
@@ -246,7 +251,6 @@ public class SearchActivity extends AppCompatActivity {
         BufferedReader bufferedReader;
         String temp = null;
         String[] splite = null;
-        String save = null;
         int i = 0;
 
         String path = "/sdcard/MiniProject/word.txt";
