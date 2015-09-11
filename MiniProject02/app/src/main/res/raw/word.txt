@@ -1299,9 +1299,8 @@ write
 writer
 written
 wrong
-youth 
-Words
-Intermediate
+youth
+intermediate
 abandon
 abstract
 abuse
@@ -2607,8 +2606,8 @@ yard
 yell
 yield
 zone 
-Words
-Centurion
+words
+centurion
 aboriginal
 absence
 absolute
@@ -3887,8 +3886,7 @@ wreck
 wrinkle
 wrist
 yawn
-yearbook 
-Words
+yearbook
 abnormal
 abolish
 abruptly
