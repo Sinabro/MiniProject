@@ -1,6 +1,5 @@
 package com.miniproject2.soma.miniproject02;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -44,7 +43,6 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        Intent intent = getIntent();
         initModel();
         initView();
         initController();
@@ -133,7 +131,7 @@ public class SearchActivity extends AppCompatActivity {
                 for(int i = 0 ; i < source.size() ; i++) {
                     // 기존에 검색된 결과라면 있는 결과를 보여줌
                     if((source.get(i).word.equals(data.word)) && source.get(i).mean != null) {
-
+                        Log.e("들어옴", "");
                         source.get(i).increaseCount();
                         source.add(0, source.get(i));
                         source.remove(i+1);
@@ -190,7 +188,7 @@ public class SearchActivity extends AppCompatActivity {
                         super.onPreExecute();
                         for(int i = 0 ; i < source.size() ; i++) {
                             // load된 데이터에 mean이 존재하지 않을 때 추가
-                            if((source.get(i).word.equals(data.word))) {
+                            if((source.get(i).word.equals(data.word)) && source.get(i).mean == null) {
                                 source.get(i).increaseCount();
                                 source.get(i).setMean(data.mean);
                                 source.add(0, source.get(i));
@@ -259,11 +257,10 @@ public class SearchActivity extends AppCompatActivity {
                     while ((temp = bufferedReader.readLine()) != null) {
                         data = new Data();
                         // 검색했던 결과의 경우 토큰을 통해 나눠서 listview에 보여줌
-                        Log.e("temp", temp);
                         splite = temp.split("\\|");
                         data.word = splite[0];
                         data.mean = splite[1];
-                        data.count = Integer.parseInt(splite[2]);
+                        //data.count = Integer.parseInt(splite[2]);
                         source.add(i, data);
                     }
                 } catch (IOException e) {
@@ -292,7 +289,6 @@ public class SearchActivity extends AppCompatActivity {
                     source.add(i, data);
                     save = data.word + "|" + data.mean + "|" + data.count + "\n";
                     fileOutputStream.write(save.getBytes());
-                    Log.e("save", save);
                     i++;
                 }
                 fileOutputStream.close();
@@ -300,10 +296,6 @@ public class SearchActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void saveText() {
-
     }
 
 /*
