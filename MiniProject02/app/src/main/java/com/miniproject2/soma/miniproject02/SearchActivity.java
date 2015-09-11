@@ -19,6 +19,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -72,14 +74,18 @@ public class SearchActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId) {
                     case 1:
+                        Collections.sort(source, new AscendingCompare());
                         break;
                     case 2:
+                        Collections.sort(source, new DescendingCompare());
                         break;
                     case 3:
+                        Collections.sort(source, new CountCompare());
                         break;
                     case 4:
                         break;
                 }
+                customAdapter.notifyDataSetChanged();
             }
         });
 
@@ -171,12 +177,25 @@ public class SearchActivity extends AppCompatActivity {
                     @Override
                     protected void onPostExecute(String result) {
                         super.onPreExecute();
+                        for(int i = 0 ; i < source.size() ; i++) {
+                            // lode된 데이터에 mean이 존재하지 않을 때 추가
+                            if((source.get(i).word.equals(data.word))) {
+                                source.get(i).increaseCount();
+                                source.get(i).setMean(data.mean);
+                                source.add(0, source.get(i));
+                                source.remove(i+1);
+                                customAdapter.notifyDataSetChanged();
+                                editText_word.setText("");
+                                return;
+                            }
+                        }
+
+                        // 처음 검색한 단어의 추가
                         source.add(0, data);
                         customAdapter.notifyDataSetChanged();
                         editText_word.setText("");
                     }
                 };
-
                 mTask.execute();
             }
         });
@@ -263,4 +282,28 @@ public class SearchActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }*/
+
+    private class AscendingCompare implements Comparator<Data> {
+
+        @Override
+        public int compare(Data lhs, Data rhs) {
+            return lhs.getWord().compareTo(rhs.getWord());
+        }
+    }
+
+    private class DescendingCompare implements Comparator<Data> {
+
+        @Override
+        public int compare(Data lhs, Data rhs) {
+            return rhs.getWord().compareTo(lhs.getWord());
+        }
+    }
+
+    private class CountCompare implements Comparator<Data> {
+
+        @Override
+        public int compare(Data lhs, Data rhs) {
+            return lhs.getCount() > rhs.getCount() ? -1 : lhs.getCount() < rhs.getCount() ? 1 : 0;
+        }
+    }
 }
