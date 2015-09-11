@@ -4,7 +4,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -19,14 +18,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -89,6 +89,7 @@ public class SearchActivity extends AppCompatActivity {
                         Collections.sort(source, new CountCompare());
                         break;
                     case 4:
+                        Collections.sort(source, new TimeCompare());
                         break;
                 }
                 customAdapter.notifyDataSetChanged();
@@ -104,6 +105,13 @@ public class SearchActivity extends AppCompatActivity {
                         loadText();
                     }
                 }).start();
+            }
+        });
+
+        button_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveText();
             }
         });
 
@@ -125,16 +133,16 @@ public class SearchActivity extends AppCompatActivity {
                 }
 
                 data = new Data();
-                data.word = editText_word.getText().toString();
+                data.word = editText_word.getText().toString().toLowerCase();
                 data.mean = "";
+                data.time = getTime();
 
-                for(int i = 0 ; i < source.size() ; i++) {
+                for (int i = 0; i < source.size(); i++) {
                     // 기존에 검색된 결과라면 있는 결과를 보여줌
-                    if((source.get(i).word.equals(data.word)) && source.get(i).mean != null) {
-                        Log.e("들어옴", "");
+                    if ((data.word.equals(source.get(i).word) && source.get(i).mean != null)) {
                         source.get(i).increaseCount();
                         source.add(0, source.get(i));
-                        source.remove(i+1);
+                        source.remove(i + 1);
                         customAdapter.notifyDataSetChanged();
                         editText_word.setText("");
 
@@ -186,13 +194,13 @@ public class SearchActivity extends AppCompatActivity {
                     @Override
                     protected void onPostExecute(String result) {
                         super.onPreExecute();
-                        for(int i = 0 ; i < source.size() ; i++) {
+                        for (int i = 0; i < source.size(); i++) {
                             // load된 데이터에 mean이 존재하지 않을 때 추가
-                            if((source.get(i).word.equals(data.word)) && source.get(i).mean == null) {
+                            if ((source.get(i).word.equals(data.word))) {
                                 source.get(i).increaseCount();
                                 source.get(i).setMean(data.mean);
                                 source.add(0, source.get(i));
-                                source.remove(i+1); // 기존 listview에 있던 data 삭제
+                                source.remove(i + 1); // 기존 listview에 있던 data 삭제
                                 customAdapter.notifyDataSetChanged();
                                 editText_word.setText("");
                                 return;
@@ -241,26 +249,26 @@ public class SearchActivity extends AppCompatActivity {
         String save = null;
         int i = 0;
 
-        String path = getFilesDir().getAbsolutePath() + "/save.txt";
-
+        String path = "/sdcard/MiniProject/word.txt";
         File files = new File(path);
 
-        if(files.exists() == true) {
+        if (files.exists() == true) {
             try {
-                fileInputStream = openFileInput("save.txt");
+                fileInputStream = new FileInputStream(path);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
             try {
-                bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream, "EUC_KR"));
+                bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream, "utf-8"));
                 try {
                     while ((temp = bufferedReader.readLine()) != null) {
                         data = new Data();
                         // 검색했던 결과의 경우 토큰을 통해 나눠서 listview에 보여줌
-                        splite = temp.split("\\|");
+                        splite = temp.split("\t");
                         data.word = splite[0];
                         data.mean = splite[1];
-                        //data.count = Integer.parseInt(splite[2]);
+                        data.count = Integer.parseInt(splite[2]);
+                        data.time = splite[3];
                         source.add(i, data);
                     }
                 } catch (IOException e) {
@@ -269,77 +277,57 @@ public class SearchActivity extends AppCompatActivity {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-        }
+            return;
+        } else
 
-        else {
-            try {
-                InputStream inputStream = getResources().openRawResource(R.raw.word);
-                FileOutputStream fileOutputStream;
-                bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "EUC_KR"));
-
-                fileOutputStream = openFileOutput("save.txt", MODE_PRIVATE);
-
-                //파일의 전체 내용 읽어오기
-                while ((temp = bufferedReader.readLine()) != null) {
-                    data = new Data();
-                    data.word = temp;
-                    data.mean = null;
-                    data.count = 0;
-
-                    source.add(i, data);
-                    save = data.word + "|" + data.mean + "|" + data.count + "\n";
-                    fileOutputStream.write(save.getBytes());
-                    i++;
-                }
-                fileOutputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        return;
     }
 
-/*
-    private void re() {
-        InputStream inputStream = getResources().openRawResource(R.raw.word);
-        ArrayList arrayList = new ArrayList<String>();
-        String data;
+    private void saveText() {
+
+        String dirPath = "/sdcard/WordBook/";
+        File file = new File(dirPath);
+        FileOutputStream fileOutputStream = null;
+        String saveStr = "";
+
+        // 일치하는 폴더가 없으면 생성
+        if (!file.exists()) {
+            file.mkdir();
+            Toast.makeText(this, "Making Directory Success", Toast.LENGTH_SHORT).show();
+        }
+
+        // txt 파일 생성
+        File savefile = new File(dirPath + "/word.txt");
+        try {
+            fileOutputStream = new FileOutputStream(savefile);
+            for (int i = 0; i < source.size(); i++)
+                saveStr += source.get(i).toString();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
         try {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "EUC_KR"));
-            while ((data = bufferedReader.readLine()) != null) {
-                arrayList.add(data);
-                Log.e("A", data);
-            }
+            fileOutputStream.write(saveStr.getBytes());
+            fileOutputStream.close();
+            Toast.makeText(this, "File Saving Success", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return;
     }
 
-    private void test() {
-        try {
-            InputStream inputStream = getResources().openRawResource(R.raw.word);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "EUC_KR"));
-            StringBuilder stringBuilder = new StringBuilder();
+    private String getTime() {
+        // 시스템으로부터 현재시간(ms) 가져오기
+        long now = System.currentTimeMillis();
+        // Data 객체에 시간을 저장한다.
+        Date date = new Date(now);
+        // 각자 사용할 포맷을 정하고 문자열로 만든다.
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        String strNow = simpleDateFormat.format(date);
 
-            String temp = null;
-            JSONObject jsonObject = new JSONObject();
-            JSONArray jsonArray = new JSONArray();
-
-            //파일의 전체 내용 읽어오기
-            while ((temp = bufferedReader.readLine()) != null) {
-                try {
-                    jsonObject.put("word", temp);
-                    jsonObject.put("mean", "");
-                    jsonObject.put("count", "0");
-                    jsonArray.put(jsonObject);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
+        return strNow;
+    }
 
     private class AscendingCompare implements Comparator<Data> {
 
@@ -362,6 +350,13 @@ public class SearchActivity extends AppCompatActivity {
         @Override
         public int compare(Data lhs, Data rhs) {
             return lhs.getCount() > rhs.getCount() ? -1 : lhs.getCount() < rhs.getCount() ? 1 : 0;
+        }
+    }
+    private class TimeCompare implements Comparator<Data> {
+
+        @Override
+        public int compare(Data lhs, Data rhs) {
+            return rhs.getTime().compareTo(lhs.getTime());
         }
     }
 }
