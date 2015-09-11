@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="2">
+        android:weightSum="3">
         <Button
             android:id="@+id/button_save"
             android:layout_width="0dp"
@@ -24,31 +24,33 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="LOAD"/>
+        <Button
+            android:id="@+id/button_clear"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="CLEAR"/>
     </LinearLayout>
 
     <RadioGroup
-        android:id="@+id/radio_group"
+        android:id="@+id/radioGroup_align"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center">
         <RadioButton
-            android:id="@+id/radio_ascending"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="오름차순"/>
         <RadioButton
-            android:id="@+id/radio_descending"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="내림차순"/>
         <RadioButton
-            android:id="@+id/radio_count"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="검색횟수"/>
         <RadioButton
-            android:id="@+id/radio_latest"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="최신검색"/>
