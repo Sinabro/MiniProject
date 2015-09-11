@@ -1,9 +1,11 @@
 package com.miniproject2.soma.miniproject02;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -13,9 +15,14 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,6 +44,7 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
+        Intent intent = getIntent();
         initModel();
         initView();
         initController();
@@ -125,15 +133,18 @@ public class SearchActivity extends AppCompatActivity {
                 for(int i = 0 ; i < source.size() ; i++) {
                     // 기존에 검색된 결과라면 있는 결과를 보여줌
                     if((source.get(i).word.equals(data.word)) && source.get(i).mean != null) {
+
                         source.get(i).increaseCount();
                         source.add(0, source.get(i));
                         source.remove(i+1);
                         customAdapter.notifyDataSetChanged();
                         editText_word.setText("");
+
                         return;
                     }
                 }
 
+                // Daum Dictionary에서 단어 뜻 가져오기
                 AsyncTask<String, Void, String> mTask = new AsyncTask<String, Void, String>() {
                     @Override
                     protected String doInBackground(String... params) {
@@ -178,24 +189,25 @@ public class SearchActivity extends AppCompatActivity {
                     protected void onPostExecute(String result) {
                         super.onPreExecute();
                         for(int i = 0 ; i < source.size() ; i++) {
-                            // lode된 데이터에 mean이 존재하지 않을 때 추가
+                            // load된 데이터에 mean이 존재하지 않을 때 추가
                             if((source.get(i).word.equals(data.word))) {
                                 source.get(i).increaseCount();
                                 source.get(i).setMean(data.mean);
                                 source.add(0, source.get(i));
-                                source.remove(i+1);
+                                source.remove(i+1); // 기존 listview에 있던 data 삭제
                                 customAdapter.notifyDataSetChanged();
                                 editText_word.setText("");
                                 return;
                             }
                         }
 
-                        // 처음 검색한 단어의 추가
+                        // 처음 검색한 단어일 경우 listview에 추가
                         source.add(0, data);
                         customAdapter.notifyDataSetChanged();
                         editText_word.setText("");
                     }
                 };
+
                 mTask.execute();
             }
         });
@@ -223,23 +235,77 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void loadText() {
-        try {
-            InputStream inputStream = getResources().openRawResource(R.raw.word);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "EUC_KR"));
-            String temp = null;
-            int i = 0;
 
-            //파일의 전체 내용 읽어오기
-            while ((temp = bufferedReader.readLine()) != null) {
-                data = new Data();
-                data.word = temp;
-                source.add(i, data);
-                i++;
+        FileInputStream fileInputStream = null;
+        BufferedReader bufferedReader;
+        String temp = null;
+        String[] splite = null;
+        String save = null;
+        int i = 0;
+
+        String path = getFilesDir().getAbsolutePath() + "/save.txt";
+
+        File files = new File(path);
+
+        if(files.exists() == true) {
+            try {
+                fileInputStream = openFileInput("save.txt");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream, "EUC_KR"));
+                try {
+                    while ((temp = bufferedReader.readLine()) != null) {
+                        data = new Data();
+                        // 검색했던 결과의 경우 토큰을 통해 나눠서 listview에 보여줌
+                        Log.e("temp", temp);
+                        splite = temp.split("\\|");
+                        data.word = splite[0];
+                        data.mean = splite[1];
+                        data.count = Integer.parseInt(splite[2]);
+                        source.add(i, data);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+
+        else {
+            try {
+                InputStream inputStream = getResources().openRawResource(R.raw.word);
+                FileOutputStream fileOutputStream;
+                bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "EUC_KR"));
+
+                fileOutputStream = openFileOutput("save.txt", MODE_PRIVATE);
+
+                //파일의 전체 내용 읽어오기
+                while ((temp = bufferedReader.readLine()) != null) {
+                    data = new Data();
+                    data.word = temp;
+                    data.mean = null;
+                    data.count = 0;
+
+                    source.add(i, data);
+                    save = data.word + "|" + data.mean + "|" + data.count + "\n";
+                    fileOutputStream.write(save.getBytes());
+                    Log.e("save", save);
+                    i++;
+                }
+                fileOutputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
+
+    private void saveText() {
+
+    }
+
 /*
     private void re() {
         InputStream inputStream = getResources().openRawResource(R.raw.word);
