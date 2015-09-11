@@ -8,11 +8,13 @@ public class Data {
     String word;
     String mean;
     int count;
+    long time;
 
     public Data() {
         this.word = null;
         this.mean = null;
         this.count = 0;
+        this.time = 0;
     }
 
 
@@ -28,16 +30,24 @@ public class Data {
         this.count = count;
     }
 
+    public void setTime(long time) {
+        this.time = time;
+    }
+
     public String getWord() {
-        return word;
+        return this.word;
     }
 
     public String getMean() {
-        return mean;
+        return this.mean;
     }
 
     public int getCount() {
-        return count;
+        return this.count;
+    }
+
+    public long getTime() {
+        return this.time;
     }
 
     public int increaseCount() {
