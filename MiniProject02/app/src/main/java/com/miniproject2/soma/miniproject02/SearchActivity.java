@@ -4,7 +4,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -12,10 +11,6 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,6 +52,7 @@ public class SearchActivity extends AppCompatActivity {
         button_search = (Button) findViewById(R.id.button_search);
         button_load = (Button) findViewById(R.id.button_load);
         button_save = (Button) findViewById(R.id.button_save);
+        button_clear = (Button) findViewById(R.id.button_clear);
         radioGroup_align = (RadioGroup) findViewById(R.id.radioGroup_align);
         listView_result = (ListView) findViewById(R.id.listView_result);
 
@@ -71,6 +67,22 @@ public class SearchActivity extends AppCompatActivity {
 
     private void initListener() {
 
+        radioGroup_align.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case 1:
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        break;
+                }
+            }
+        });
+
         button_load.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,7 +92,14 @@ public class SearchActivity extends AppCompatActivity {
                         loadText();
                     }
                 }).start();
+            }
+        });
 
+        button_clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                source.clear();
+                customAdapter.notifyDataSetChanged();
             }
         });
 
@@ -93,14 +112,21 @@ public class SearchActivity extends AppCompatActivity {
                     return;
                 }
 
-                for(int i = 0 ; i < source.size() ; i++) {
-                    if((source.get(i).word.equals(editText_word.getText().toString())) && source.get(i).mean != null)
-                        source.get(i).increaseCount();
-                }
-
                 data = new Data();
                 data.word = editText_word.getText().toString();
                 data.mean = "";
+
+                for(int i = 0 ; i < source.size() ; i++) {
+                    // 기존에 검색된 결과라면 있는 결과를 보여줌
+                    if((source.get(i).word.equals(data.word)) && source.get(i).mean != null) {
+                        source.get(i).increaseCount();
+                        source.add(0, source.get(i));
+                        source.remove(i+1);
+                        customAdapter.notifyDataSetChanged();
+                        editText_word.setText("");
+                        return;
+                    }
+                }
 
                 AsyncTask<String, Void, String> mTask = new AsyncTask<String, Void, String>() {
                     @Override
@@ -195,7 +221,7 @@ public class SearchActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
+/*
     private void re() {
         InputStream inputStream = getResources().openRawResource(R.raw.word);
         ArrayList arrayList = new ArrayList<String>();
@@ -221,7 +247,6 @@ public class SearchActivity extends AppCompatActivity {
             String temp = null;
             JSONObject jsonObject = new JSONObject();
             JSONArray jsonArray = new JSONArray();
-            int i = 0;
 
             //파일의 전체 내용 읽어오기
             while ((temp = bufferedReader.readLine()) != null) {
@@ -230,17 +255,12 @@ public class SearchActivity extends AppCompatActivity {
                     jsonObject.put("mean", "");
                     jsonObject.put("count", "0");
                     jsonArray.put(jsonObject);
-                    Log.e("값 : ", jsonObject.toString());
-                    //i++;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
-
-            Log.e("값 : ", jsonArray.toString());
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 }
