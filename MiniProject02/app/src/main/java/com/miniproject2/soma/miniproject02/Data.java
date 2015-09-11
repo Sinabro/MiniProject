@@ -13,7 +13,7 @@ public class Data {
     public Data() {
         this.word = null;
         this.mean = null;
-        this.count = 0;
+        this.count = 1;
         this.time = null;
     }
 
@@ -52,5 +52,10 @@ public class Data {
 
     public int increaseCount() {
         return ++count;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s\t%s\t%d\t%s\n", word, mean, count, time);
     }
 }
