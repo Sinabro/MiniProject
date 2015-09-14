@@ -253,7 +253,7 @@ public class SearchActivity extends AppCompatActivity {
         String[] splite = null;
         int i = 0;
 
-        String path = "/sdcard/MiniProject/word.txt";
+        String path = "/sdcard/WordBook/word.txt";
         File files = new File(path);
 
         if (files.exists() == true) {
