@@ -2,6 +2,7 @@ package org.sopt;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.FileLock;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -47,17 +48,44 @@ public class Server {
         Collections.sort(userList, new Comparator<User>() {
             @Override
             public int compare(User o1, User o2) {
-                if(o1.getScore() > o2.getScore())
+                if (o1.getScore() > o2.getScore())
                     return -1;
-                else if(o1.getScore() < o2.getScore())
+                else if (o1.getScore() < o2.getScore())
                     return 1;
                 else
                     return 0;
             }
         });
         System.out.println("=============================");
-        for (int i = 0; i < 100; i++) {
+
+        for (int i = 0; i < 99; i++) {
             System.out.println(userList.get(i).getId() + " : " + userList.get(i).getScore() + " 점");
         }
+
+
+        // MyRank 가져오기
+        System.out.println("=============================");
+
+        int num = 0;
+
+        for (int i = num - 10 ; i < num + 11 ; i++) {
+
+            if(i < 0)
+                i = 0;
+
+            if(i >= userList.size())
+                break;
+
+            if(i < num)
+                System.out.println("ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");
+
+            else if(i == num)
+                System.out.println("ID : " + userList.get(i).getId() + " / 내 점수 : " + userList.get(num).getScore());
+
+            else if(i > num && i < num + 11)
+                System.out.println("ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");
+
+        }
     }
+
 }
