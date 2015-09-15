@@ -4,14 +4,24 @@ package org.sopt;
  * Created by jiyoungpark on 15. 9. 14..
  */
 public class User {
+    int id;
     String name;
     String sex;
-    int age;
+    int score;
 
-    public User(String name, String sex, int age) {
+    public User(int id, String name, String sex, int score) {
+        this.id = id;
         this.name = name;
         this.sex = sex;
-        this.age = age;
+        this.score = score;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -30,11 +40,11 @@ public class User {
         this.sex = sex;
     }
 
-    public int getAge() {
-        return age;
+    public int getScore() {
+        return score;
     }
 
-    public void setAge(int age) {
-        this.age = age;
+    public void setScore(int score) {
+        this.score = score;
     }
 }
