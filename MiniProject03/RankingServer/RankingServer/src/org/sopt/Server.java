@@ -66,26 +66,23 @@ public class Server {
         // MyRank 가져오기
         System.out.println("=============================");
 
-        int num = 0;
+        int num = 10;
 
         for (int i = num - 10 ; i < num + 11 ; i++) {
-
-            if(i < 0)
+            if(i < 0)                           // 나보다 점수를 잘 받은 사람이 10명 미만
                 i = 0;
-
-            if(i >= userList.size())
+            if(i >= userList.size())            // 나보다 점수를 못 받은 사람이 10명 미만
                 break;
 
-            if(i < num)
-                System.out.println("ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");
+            if(i < num)                         // 나보다 점수를 잘 받은 사람
+                System.out.println("등수 : " + (i+1) + " / ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");
 
-            else if(i == num)
-                System.out.println("ID : " + userList.get(i).getId() + " / 내 점수 : " + userList.get(num).getScore());
+            else if(i == num)                   // 내 점수 출력
+                System.out.println("내 등수 : " + (i+1) + " / ID : " + userList.get(i).getId() + " / 내 점수 : " + userList.get(num).getScore());
 
-            else if(i > num && i < num + 11)
-                System.out.println("ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");
+            else if(i > num && i < num + 11)    // 나보다 점수를 못 받은 사람
+                System.out.println("등수 : " + (i+1) + " / ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");
 
         }
     }
-
 }
