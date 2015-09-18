@@ -16,7 +16,7 @@ public class TopRank extends Thread {
     @Override
     public void run() {
         System.out.println("<<<<<<<<< Top Rank >>>>>>>>>>");
-        for(int i = 0 ; i < 10 ; i ++)
+        for(int i = 0 ; i < 10 && i < userList.size() ; i ++)
             System.out.println("등수 : " + (i+1) + " / ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");
     }
 }

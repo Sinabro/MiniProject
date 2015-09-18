@@ -12,34 +12,74 @@ import java.util.concurrent.Executors;
 public class Server {
     public static void main(String argv[]) throws Exception {
         // 서버소켓을 생성.
-        int POOL_SIZE = 1;
+        int cnt = 0;
+        int POOL_SIZE = 100;
         Random random = new Random();
         Map<Integer, User> userMap = new HashMap<Integer, User>();
         List<User> userList = new ArrayList<User>();
         User user;
-        int UserID = 23;
 
+        Socket clientSocket = null;
         Executor executor = Executors.newFixedThreadPool(POOL_SIZE);
+
+        MyRank myRank = new MyRank(userList, 4);
+        TopRank topRank = new TopRank(userList);
 
         ServerSocket listenSocket = new ServerSocket(8888);
         System.out.println("WebServer Socket Created");
 
-        Socket connectionSocket = null;
-
-        ServerThread serverThread = null;
         // 순환을 돌면서 클라이언트의 접속을 받는다.
         // accept()는 Blocking 메서드이다.
-
-        /*while((connectionSocket = listenSocket.accept()) != null) {
+        
+        while((clientSocket = listenSocket.accept()) != null) {
             // 서버 쓰레드를 생성하여 실행한다.
-            serverThread = new ServerThread(connectionSocket);
-            executor.execute(serverThread);
-        }*/
+            user = new User(cnt, "sopt", "female", random.nextInt(1000000001));
 
-        for (int i = 1; i < 300; i++) {
+            ServerThread serverThread = new ServerThread(clientSocket);
+
+            executor.execute(serverThread);
+
+            userMap.put(cnt, user);
+            userList.add(cnt, user);
+
+
+            //if(cnt % 100 == 99) {
+                // 점수 내림차순 정렬
+            Collections.sort(userList, new Comparator<User>() {
+                @Override
+                public int compare(User o1, User o2) {
+                    if (o1.getScore() > o2.getScore())
+                        return -1;
+                    else if (o1.getScore() < o2.getScore())
+                        return 1;
+                    else
+                        return 0;
+                }
+            });
+
+
+            //}
+
+            myRank.run();
+            topRank.run();
+
+            //if(cnt % 101 == 100) {
+
+                //myRank.join();
+                //myRank.start();
+            //}
+            //if(cnt % 102 == 101) {
+
+                //topRank.join();
+                //topRank.start();
+            //}
+
+            cnt++;
+        }
+
+        /*
             user = new User(i, "sopt", "female", random.nextInt(1000000001));
-            serverThread = new ServerThread(connectionSocket, user);
-            serverThread.isDaemon();
+            ServerThread serverThread = new ServerThread(connectionSocket, user);
             serverThread.start();
             //executor.execute(serverThread);
             //System.out.println(user.getId());
@@ -69,7 +109,7 @@ public class Server {
                 topRank.join();
                 topRank.start();
             }
-        }
+        }*/
 
 
 
