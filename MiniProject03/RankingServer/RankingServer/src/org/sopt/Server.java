@@ -2,7 +2,6 @@ package org.sopt;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.channels.FileLock;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -13,11 +12,12 @@ import java.util.concurrent.Executors;
 public class Server {
     public static void main(String argv[]) throws Exception {
         // 서버소켓을 생성.
-        int POOL_SIZE = 50;
+        int POOL_SIZE = 1;
         Random random = new Random();
         Map<Integer, User> userMap = new HashMap<Integer, User>();
         List<User> userList = new ArrayList<User>();
         User user;
+        int UserID = 23;
 
         Executor executor = Executors.newFixedThreadPool(POOL_SIZE);
 
@@ -36,53 +36,66 @@ public class Server {
             executor.execute(serverThread);
         }*/
 
-        for (int i = 1; i < 101; i++) {
-            user = new User(i, "sopt", "female", random.nextInt(101));
+        for (int i = 1; i < 300; i++) {
+            user = new User(i, "sopt", "female", random.nextInt(1000000001));
+            serverThread = new ServerThread(connectionSocket, user);
+            serverThread.isDaemon();
+            serverThread.start();
+            //executor.execute(serverThread);
+            //System.out.println(user.getId());
             userMap.put(i, user);
             userList.add(i - 1, user);
-
-            System.out.println(i + " : " + user.getScore() + " 점");
-        }
-
-        // 점수 내림차순 정렬
-        Collections.sort(userList, new Comparator<User>() {
-            @Override
-            public int compare(User o1, User o2) {
-                if (o1.getScore() > o2.getScore())
-                    return -1;
-                else if (o1.getScore() < o2.getScore())
-                    return 1;
-                else
-                    return 0;
+            if(i % 100 == 99) {
+                // 점수 내림차순 정렬
+                Collections.sort(userList, new Comparator<User>() {
+                    @Override
+                    public int compare(User o1, User o2) {
+                        if (o1.getScore() > o2.getScore())
+                            return -1;
+                        else if (o1.getScore() < o2.getScore())
+                            return 1;
+                        else
+                            return 0;
+                    }
+                });
             }
-        });
-        System.out.println("=============================");
-
-        for (int i = 0; i < 99; i++) {
-            System.out.println(userList.get(i).getId() + " : " + userList.get(i).getScore() + " 점");
+            if(i % 101 == 100) {
+                MyRank myRank = new MyRank(userList, 23);
+                myRank.join();
+                myRank.start();
+            }
+            if(i % 102 == 101) {
+                TopRank topRank = new TopRank(userList);
+                topRank.join();
+                topRank.start();
+            }
         }
+
 
 
         // MyRank 가져오기
-        System.out.println("=============================");
+       /* System.out.println("=============================");
 
-        int num = 10;
+        int userID = 10;
 
-        for (int i = num - 10 ; i < num + 11 ; i++) {
+        for (int i = userID - 10 ; i < userID + 11 ; i++) {
             if(i < 0)                           // 나보다 점수를 잘 받은 사람이 10명 미만
                 i = 0;
             if(i >= userList.size())            // 나보다 점수를 못 받은 사람이 10명 미만
                 break;
 
-            if(i < num)                         // 나보다 점수를 잘 받은 사람
+            if(i < userID)                         // 나보다 점수를 잘 받은 사람
+
+
+            else if(i == userID)                   // 내 점수 출력
+                System.out.println("내 등수 : " + (i+1) + " / ID : " + userList.get(i).getId() + " / 내 점수 : " + userList.get(userID).getScore());
+
+            else if(i > userID && i < userID + 11)    // 나보다 점수를 못 받은 사람
                 System.out.println("등수 : " + (i+1) + " / ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");
+        }*/
 
-            else if(i == num)                   // 내 점수 출력
-                System.out.println("내 등수 : " + (i+1) + " / ID : " + userList.get(i).getId() + " / 내 점수 : " + userList.get(num).getScore());
-
-            else if(i > num && i < num + 11)    // 나보다 점수를 못 받은 사람
-                System.out.println("등수 : " + (i+1) + " / ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");
-
-        }
+        /* Top 10 Rank 가져오기 */
+        /*for(int i = 0 ; i < 10 ; i ++)
+            System.out.println("등수 : " + (i+1) + " / ID : " + userList.get(i).getId() + " / 점수 : " + userList.get(i).getScore() + " 점");*/
     }
 }
