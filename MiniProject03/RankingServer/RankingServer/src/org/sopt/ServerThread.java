@@ -70,6 +70,7 @@ public class ServerThread extends Thread {
 
                     // 요청 파일을 출력한다.
                     outToClient.write(fileInBytes, 0, numOfBytes);
+                    clientSocket.close();
                 }
 
                 else {

@@ -15,27 +15,30 @@ public class Server {
         int cnt = 0;
         int POOL_SIZE = 100;
         Random random = new Random();
-        Map<Integer, User> userMap = new HashMap<Integer, User>();
-        List<User> userList = new ArrayList<User>();
         User user;
 
+        Map<Integer, User> userMap = new HashMap<Integer, User>();
+        List<User> userList = new ArrayList<User>();
+
         Socket clientSocket = null;
+
         Executor executor = Executors.newFixedThreadPool(POOL_SIZE);
 
-        MyRank myRank = new MyRank(userList, 4);
-        TopRank topRank = new TopRank(userList);
 
+
+        ServerThread serverThread;
         ServerSocket listenSocket = new ServerSocket(8888);
+
         System.out.println("WebServer Socket Created");
 
         // 순환을 돌면서 클라이언트의 접속을 받는다.
         // accept()는 Blocking 메서드이다.
-        
+
         while((clientSocket = listenSocket.accept()) != null) {
             // 서버 쓰레드를 생성하여 실행한다.
             user = new User(cnt, "sopt", "female", random.nextInt(1000000001));
 
-            ServerThread serverThread = new ServerThread(clientSocket);
+            serverThread = new ServerThread(clientSocket);
 
             executor.execute(serverThread);
 
@@ -57,22 +60,11 @@ public class Server {
                 }
             });
 
+            MyRank myRank = new MyRank(userList, 4);
+            TopRank topRank = new TopRank(userList);
 
-            //}
-
-            myRank.run();
-            topRank.run();
-
-            //if(cnt % 101 == 100) {
-
-                //myRank.join();
-                //myRank.start();
-            //}
-            //if(cnt % 102 == 101) {
-
-                //topRank.join();
-                //topRank.start();
-            //}
+            myRank.start();
+            topRank.start();
 
             cnt++;
         }
