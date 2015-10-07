@@ -2,11 +2,15 @@ import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.ServerWebSocket;
+import io.vertx.core.http.WebSocket;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.sockjs.BridgeOptions;
+import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSSocket;
 import io.vertx.ext.web.handler.sockjs.impl.SockJSSocketBase;
@@ -40,62 +44,25 @@ public class Server extends AbstractVerticle {
         vertx.deployVerticle(this);
     }
 
-    @Override
-    public void start() throws Exception {
 
-        HttpServer httpServer = vertx.createHttpServer();
-        httpServer.requestHandler(new Handler<HttpServerRequest>() {
-            @Override
-            public void handle(HttpServerRequest httpServerRequest) {
-                String method = String.valueOf(httpServerRequest.method());
-                String uri = httpServerRequest.uri();
-                String path = httpServerRequest.path();
-                String query = httpServerRequest.query();
-
-                System.out.println("Receive http request : {method=" + method + ", uri=" + uri + ", path=" + path + ", query=" + query + "}");
-
-                httpServerRequest.bodyHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer buffer) {
-                        System.out.println("Receive data : " + buffer.toString());
-                    }
-                });
-                httpServerRequest.response().setStatusCode(200).end("OK");
+    public void start() {
+        vertx.createHttpServer().websocketHandler(new Handler<ServerWebSocket>() {
+            public void handle(final ServerWebSocket ws) {
+                if (ws.path().equals("/myapp")) {
+                    ws.handler(new Handler<Buffer>() {
+                        public void handle(Buffer data) {
+                            ws.writeFinalTextFrame(data.toString()); // Echo it back
+                            System.out.println("Echo : " + data.toString());
+                        }
+                    });
+                } else {
+                    ws.reject();
+                }
             }
-        });
-
-
-        SockJSHandler sockJSHandler = SockJSHandler.create(vertx);
-
-        //router.route("/mySockJS").handler(sockJSHandler);
-        //JsonObject config = new JsonObject();
-        //config.put("prefix", "/mySockJS");
-
-
-        sockJSHandler.socketHandler(new Handler<SockJSSocket>() {
-            @Override
-            public void handle(SockJSSocket sockJSSocket) {
-                sockJSSocket.handler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer buffer) {
-                        System.out.println("receive data : " + buffer.toString());
-                        sockJSSocket.write(buffer);
-                    }
-                });
-                sockJSSocket.exceptionHandler(new Handler<Throwable>() {
-                    @Override
-                    public void handle(Throwable throwable) {
-                        System.out.println("unexpected exception: " + throwable);
-                    }
-                });
+        }).requestHandler(new Handler<HttpServerRequest>() {
+            public void handle(HttpServerRequest req) {
+                if (req.path().equals("/")) req.response().sendFile("ws.html"); // Serve the html
             }
-        });
-
-        httpServer.listen(8080, new Handler<AsyncResult<HttpServer>>() {
-            @Override
-            public void handle(AsyncResult<HttpServer> asyncResult) {
-                System.out.println("bind result: " + asyncResult.succeeded());
-            }
-        });
+        }).listen(8080);
     }
 }
