@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>test</title>
-
+    
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 </head>
-
 <body>
     <script>
         var socket;
@@ -36,26 +34,24 @@
             }
             if (socket.readyState == WebSocket.OPEN) {
                 socket.send(message);
-            } 
-            else {
+            } else {
                 alert("The socket is not open.");
             }
         }
     </script>
-
-    <form class="form-search" onsubmit="return false;">
-        <div class="input-append">
-            <input type="text" class="input-block-level" name="message" value="Hello, World!" />
-            <button type="submit" class="btn" value="Send Web Socket Data" onclick="send(this.form.message.value)">SEND</button>
+    <form onsubmit="return false;">
+        <div class="input-prepend">
+        <input type="text" name="message" value="Hello, World!" />
+        <input type="button" value="Send Web Socket Data" onclick="send(this.form.message.value)" />
         </div>
+        
     </form>
     <table id="test" class="table table-bordered table-hover">
         <tbody>
             <tr>
-                <td><strong>MiniProject04 - Vert.x와 Bootstrap을 이용한 채팅</strong></td>
+            <td>MiniProject04 - Vert.x와 Bootstrap을 이용한 채팅</td>
             </tr>
         </tbody>
     </table>
 </body>
-
 </html>

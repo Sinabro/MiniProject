@@ -37,6 +37,9 @@
             if (socket.readyState == WebSocket.OPEN) {
                 socket.send(message);
             } 
+            if(socket.CLOSED) {
+                socket.send("123end123");
+            }
             else {
                 alert("The socket is not open.");
             }

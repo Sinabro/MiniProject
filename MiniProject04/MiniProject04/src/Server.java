@@ -2,11 +2,12 @@ import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.ServerWebSocket;
+import io.vertx.core.http.WebsocketVersion;
 import io.vertx.core.net.NetServer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created by jiyoungpark on 15. 10. 6..
@@ -16,6 +17,7 @@ public class Server extends AbstractVerticle {
     static private int count;
     private NetServer server;
 
+    ConcurrentMap<Integer, ServerWebSocket> sockets;
     List<ServerWebSocket> websockets;
     Vertx vertx;
 
@@ -27,6 +29,7 @@ public class Server extends AbstractVerticle {
 
     public Server() {
         websockets = new ArrayList<ServerWebSocket>();
+        sockets = new ConcurrentHashMap<>();
         vertx = Vertx.vertx();
         count = 0;
     }
@@ -41,28 +44,18 @@ public class Server extends AbstractVerticle {
                 if (ws.path().equals("/myapp")) {
                     ws.handler(new Handler<Buffer>() {
                         public void handle(Buffer data) {
-                            int i = 0;
-                            boolean flag = true;
+                            if (!sockets.containsValue(ws)) {
+                                sockets.put(count, ws);
+                                count++;
+                            }
 
-                            while(i < websockets.size()) {
-                                if(websockets.get(i) == ws) {
-                                    flag = false;
-                                    break;
+                            System.out.println("sessions : " + data);
+                            for (int i = 0; i < sockets.size(); i++) {
+                                try {
+                                    sockets.get(i).writeFinalTextFrame(data.toString());
+                                } catch (IllegalStateException e) {
+
                                 }
-                                i++;
-                            }
-
-                            if(flag) {
-                                websockets.add(ws);
-                            }
-
-                            i = 0;
-
-                            while(i < websockets.size()) {
-                                websockets.get(i).writeFinalTextFrame(data.toString());
-                                System.out.println("sessions : " + ws.headers());
-                                System.out.println("sessions : " + websockets.get(i));
-                                i++;
                             }
                         }
                     });

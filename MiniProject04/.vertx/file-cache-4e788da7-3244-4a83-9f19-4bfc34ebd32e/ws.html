@@ -36,23 +36,25 @@
             }
             if (socket.readyState == WebSocket.OPEN) {
                 socket.send(message);
-            } 
-            else {
+            } else {
                 alert("The socket is not open.");
             }
         }
     </script>
-
+    <form onsubmit="return false;">
+        <input type="text" name="message" value="Hello, World!" />
+        <input type="button" value="Send Web Socket Data" onclick="send(this.form.message.value)" />
+    </form>
     <form class="form-search" onsubmit="return false;">
         <div class="input-append">
-            <input type="text" class="input-block-level" name="message" value="Hello, World!" />
-            <button type="submit" class="btn" value="Send Web Socket Data" onclick="send(this.form.message.value)">SEND</button>
+            <input type="text" name="message" value="Hello, World!" />
+            <button type="submit" class="btn" value="Send Web Socket Data" onclick="send(this.form.message.value)">Search</button>
         </div>
     </form>
     <table id="test" class="table table-bordered table-hover">
         <tbody>
             <tr>
-                <td><strong>MiniProject04 - Vert.x와 Bootstrap을 이용한 채팅</strong></td>
+                <td>MiniProject04 - Vert.x와 Bootstrap을 이용한 채팅</td>
             </tr>
         </tbody>
     </table>
