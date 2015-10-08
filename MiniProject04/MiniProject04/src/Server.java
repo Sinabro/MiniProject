@@ -50,9 +50,13 @@ public class Server extends AbstractVerticle {
                             }
 
                             System.out.println("sessions : " + data);
+
                             for (int i = 0; i < sockets.size(); i++) {
                                 try {
-                                    sockets.get(i).writeFinalTextFrame(data.toString());
+                                    if(sockets.get(i) == ws)
+                                        sockets.get(i).writeFinalTextFrame("<tr><td style=\"text-align:right; height=auto;\">" + data.toString() + "<//td></tr>");
+                                    else
+                                        sockets.get(i).writeFinalTextFrame("<tr><td style=\"text-align:left; height=auto;\">" + ws.binaryHandlerID() + " >> " + data.toString() + "</td></tr>");
                                 } catch (IllegalStateException e) {
 
                                 }
