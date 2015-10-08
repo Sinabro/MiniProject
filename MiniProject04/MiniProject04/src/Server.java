@@ -42,8 +42,22 @@ public class Server extends AbstractVerticle {
                     ws.handler(new Handler<Buffer>() {
                         public void handle(Buffer data) {
                             int i = 0;
-                            websockets.add(count, ws);
-                            count++;
+                            boolean flag = true;
+
+                            while(i < websockets.size()) {
+                                if(websockets.get(i) == ws) {
+                                    flag = false;
+                                    break;
+                                }
+                                i++;
+                            }
+
+                            if(flag) {
+                                websockets.add(ws);
+                            }
+
+                            i = 0;
+
                             while(i < websockets.size()) {
                                 websockets.get(i).writeFinalTextFrame(data.toString());
                                 System.out.println("sessions : " + ws.headers());

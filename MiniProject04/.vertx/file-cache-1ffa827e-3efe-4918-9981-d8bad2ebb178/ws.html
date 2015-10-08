@@ -16,7 +16,7 @@
         if (window.WebSocket) {
             socket = new WebSocket("ws://localhost:8080/myapp");
             socket.onmessage = function(event) {
-                $('#test').find('tbody').append('<tr><td>' + event.data + '</td></tr>');
+                $('#test').find('/tr').append('<tr><td>' + event.data + '</td></tr>');
             }
             socket.onopen = function(event) {
                 alert("Web Socket opened!");
@@ -45,9 +45,6 @@
     </form>
     <table id="test" class="table table-bordered table-hover">
         <tbody>
-            <tr>
-            <td>MiniProject04 - Vert.x와 Bootstrap을 이용한 채팅</td>
-            </tr>
         </tbody>
     </table>
 </body>
