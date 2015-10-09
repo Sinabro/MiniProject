@@ -2,8 +2,6 @@ import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.ServerWebSocket;
-import io.vertx.core.http.WebsocketVersion;
-import io.vertx.core.net.NetServer;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,27 +71,17 @@ public class Server extends AbstractVerticle {
                                     } catch (IllegalStateException e) {
                                     }
                                 }
-                            }
-                               }
-
-                    );
+                        }
+                    });
                 } else {
                     ws.reject();
                 }
             }
-                                                  }
-
-        ).
-
-                requestHandler(new Handler<HttpServerRequest>() {
-                                   public void handle(HttpServerRequest req) {
-                                       if (req.path().equals("/"))
-                                       req.response().sendFile("ws.html"); // Serve the html
-                               }
-                           }
-
-            ).
-
-            listen(8080);
+        }).requestHandler(new Handler<HttpServerRequest>() {
+            public void handle(HttpServerRequest req) {
+                if (req.path().equals("/"))
+                    req.response().sendFile("ws.html"); // Serve the html
+            }
+        }).listen(8080);
         }
     }
