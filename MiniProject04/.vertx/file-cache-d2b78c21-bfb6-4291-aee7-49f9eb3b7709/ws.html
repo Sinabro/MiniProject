@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    
     <title>Chatting</title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
@@ -19,7 +18,7 @@
         if (window.WebSocket) {
             socket = new WebSocket("ws://localhost:8080/myapp");
             socket.onmessage = function(event) {
-                $('#test').find('tbody').append(event.data);
+                $('#test').find('tbody').append('<tr><td>' + event.data + '</td></tr>');
                 $("#contents").scrollTop($("#contents")[0].scrollHeight);
             }
             socket.onopen = function(event) {
@@ -37,14 +36,8 @@
                 return;
             }
             if (socket.readyState == WebSocket.OPEN) {
-                if (message == "")
-                    alert("Message Data is null");
-                else {
-                    socket.send(message);
-                    $("#messageData").val("");
-                }
-            }
-            if (socket.readyState != WebSocket.OPEN) {
+                socket.send(message);
+            } else {
                 alert("The socket is not open.");
             }
         }
@@ -59,14 +52,11 @@
         </table>
     </div>
 
-    
+    <form class="form-search" onsubmit="return false;">
         <div class="input-append" style="text-align:center; margin:5%">
-            <form class="form-message" onsubmit="return false;">
-            <input id="messageData" type="text" class="col-sm-10" name="message" placeholder="Write Your Message" />
-            <button type="submit reset" class="col-sm-2" value="SEND" onclick="send(this.form.message.value)">SEND</button>
-                </form>
+            <input type="text" class="col-sm-10" name="message" value="Hello, World!" />
+            <button type="submit" class="col-sm-2" value="Send Web Socket Data" onclick="send(this.form.message.value)">SEND</button>
         </div>
-    
+    </form>
 </body>
-
 </html>

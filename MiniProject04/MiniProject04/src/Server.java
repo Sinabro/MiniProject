@@ -15,10 +15,11 @@ import java.util.concurrent.ConcurrentMap;
 public class Server extends AbstractVerticle {
 
     static private int count;
-    private NetServer server;
+    String message;
 
     ConcurrentMap<Integer, ServerWebSocket> sockets;
     List<ServerWebSocket> websockets;
+    ArrayList<String> messages;
     Vertx vertx;
 
     // Convenience method so you can run it in your IDE
@@ -28,8 +29,10 @@ public class Server extends AbstractVerticle {
     }
 
     public Server() {
+        message = null;
         websockets = new ArrayList<ServerWebSocket>();
         sockets = new ConcurrentHashMap<>();
+        messages = new ArrayList<>();
         vertx = Vertx.vertx();
         count = 0;
     }
@@ -46,32 +49,51 @@ public class Server extends AbstractVerticle {
                         public void handle(Buffer data) {
                             if (!sockets.containsValue(ws)) {
                                 sockets.put(count, ws);
-                                count++;
-                            }
+                                for (int num = messages.size() - 1; num != messages.size() - 10; num--) {
+                                    try {
+                                        if (count == 0)
+                                            break;
+                                        sockets.get(count).writeFinalTextFrame(messages.get(num));
+                                    } catch (ArrayIndexOutOfBoundsException e) {}
+                                    }
+                                    count++;
+                                }
 
-                            System.out.println("sessions : " + data);
+                                System.out.println("sessions : " + data);
 
-                            for (int i = 0; i < sockets.size(); i++) {
-                                try {
-                                    if(sockets.get(i) == ws)
-                                        sockets.get(i).writeFinalTextFrame("<tr><td style=\"text-align:right; height=auto;\">" + data.toString() + "<//td></tr>");
-                                    else
-                                        sockets.get(i).writeFinalTextFrame("<tr><td style=\"text-align:left; height=auto;\">" + ws.binaryHandlerID() + " >> " + data.toString() + "</td></tr>");
-                                } catch (IllegalStateException e) {
+                                message = "<tr><td style=\"text-align:left; height=auto;\">" + ws.binaryHandlerID() + " >> " + data.toString() + "</td></tr>";
+                                messages.add(message);
 
+                                for (int i = 0; i < sockets.size(); i++) {
+                                    try {
+                                        if (sockets.get(i) == ws)
+                                            sockets.get(i).writeFinalTextFrame("<tr><td style=\"text-align:right; height=auto;\">" + data.toString() + "<//td></tr>");
+                                        else
+                                            sockets.get(i).writeFinalTextFrame(message);
+                                    } catch (IllegalStateException e) {
+                                    }
                                 }
                             }
-                        }
-                    });
+                               }
+
+                    );
                 } else {
                     ws.reject();
                 }
             }
-        }).requestHandler(new Handler<HttpServerRequest>() {
-            public void handle(HttpServerRequest req) {
-                if (req.path().equals("/"))
-                    req.response().sendFile("ws.html"); // Serve the html
-            }
-        }).listen(8080);
+                                                  }
+
+        ).
+
+                requestHandler(new Handler<HttpServerRequest>() {
+                                   public void handle(HttpServerRequest req) {
+                                       if (req.path().equals("/"))
+                                       req.response().sendFile("ws.html"); // Serve the html
+                               }
+                           }
+
+            ).
+
+            listen(8080);
+        }
     }
-}
